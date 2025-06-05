@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Virtual Fidget Spinner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            transition: background-color 0.5s;
+            overflow-x: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            cursor: pointer;
+        }
+
+        .spinner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s linear;
+            transform-origin: center center;
+        }
+
+        .arm {
+            position: absolute;
+            width: 120px;
+            height: 30px;
+            background-color: #3498db;
+            border-radius: 15px;
+            top: 135px;
+            left: 90px;
+            transform-origin: center center;
+            transition: background-color 0.5s;
+        }
+
+        .circle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #e74c3c;
+            transition: background-color 0.5s, box-shadow 0.5s;
+        }
+
+        .center-circle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #2c3e50;
+            top: 125px;
+            left: 125px;
+            z-index: 10;
+            transition: background-color 0.5s, box-shadow 0.5s;
+        }
+
+        .arm:nth-child(1) { transform: rotate(0deg); }
+        .arm:nth-child(2) { transform: rotate(120deg); }
+        .arm:nth-child(3) { transform: rotate(240deg); }
+
+        .circle:nth-child(4) { top: 105px; left: 10px; }
+        .circle:nth-child(5) { top: 105px; left: 230px; }
+        .circle:nth-child(6) { top: 230px; left: 120px; }
+
+        .controls {
+            margin-top: 30px;
+        }
+
+        .theme-btn {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .stats {
+            margin-top: 20px;
+            font-size: 18px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        /* Fireworks effect */
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: explode 1s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(20);
+                opacity: 0;
+            }
+        }
+
+        /* Speed trail effect */
+        .speed-trail {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.7;
+            animation: fadeOut 1s linear forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 0.7; }
+            100% { opacity: 0; }
+        }
+
+        /* Themes */
+        /* Classic theme */
+        .classic .arm { background-color: #3498db; }
+        .classic .circle { background-color: #e74c3c; }
+        .classic .center-circle { background-color: #2c3e50; }
+        .classic { background-color: #f0f0f0; }
+
+        /* Neon theme */
+        .neon .arm { background-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
+        .neon .circle { background-color: #ff00ff; box-shadow: 0 0 10px #ff00ff; }
+        .neon .center-circle { background-color: #00ffff; box-shadow: 0 0 10px #00ffff; }
+        .neon { background-color: #111; }
+
+        /* Fire theme */
+        .fire .arm { background-color: #ff5722; }
+        .fire .circle { background-color: #ffeb3b; }
+        .fire .center-circle { background-color: #f44336; }
+        .fire { background-color: #3e2723; }
+
+        /* Ice theme */
+        .ice .arm { background-color: #90caf9; }
+        .ice .circle { background-color: #e1f5fe; }
+        .ice .center-circle { background-color: #0d47a1; }
+        .ice { background-color: #bbdefb; }
+
+        /* Galaxy theme */
+        .galaxy .arm { background-color: #9c27b0; }
+        .galaxy .circle { background-color: #7e57c2; }
+        .galaxy .center-circle { background-color: #1a237e; }
+        .galaxy { background-color: #311b92; }
+
+        /* Anime themes */
+        /* Naruto theme */
+        .naruto .arm { 
+            background-color: #ff9800; 
+            background-image: linear-gradient(to right, #ff9800, #ff5722);
+        }
+        .naruto .circle { 
+            background-color: #2196f3; 
+            background-image: radial-gradient(circle, #2196f3, #0d47a1);
+        }
+        .naruto .center-circle { 
+            background-color: #f44336;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="black"/><path d="M50,10 L60,40 L90,50 L60,60 L50,90 L40,60 L10,50 L40,40 Z" fill="white"/></svg>');
+            background-size: cover;
+        }
+        .naruto { background-color: #ffecb3; }
+
+        /* Dragon Ball theme */
+        .dragonball .arm { 
+            background-color: #ff9800; 
+            background-image: linear-gradient(to right, #ff9800, #ff5722);
+        }
+        .dragonball .circle { 
+            background-color: #ffc107;
+            box-shadow: 0 0 15px #ffc107;
+            background-image: radial-gradient(circle, #ffc107, #ff9800);
+        }
+        .dragonball .center-circle { 
+            background-color: #ff5722;
+            background-image: radial-gradient(circle, #ff5722, #e64a19);
+            box-shadow: 0 0 20px #ff5722;
+        }
+        .dragonball { background-color: #4a148c; }
+
+        /* One Piece theme */
+        .onepiece .arm { 
+            background-color: #f44336; 
+            background-image: linear-gradient(to right, #f44336, #b71c1c);
+        }
+        .onepiece .circle { 
+            background-color: #ffeb3b;
+            background-image: radial-gradient(circle, #ffeb3b, #fbc02d);
+        }
+        .onepiece .center-circle { 
+            background-color: #000000;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="white"/><circle cx="50" cy="50" r="30" fill="black"/><path d="M50,20 L55,40 L75,40 L60,55 L65,75 L50,65 L35,75 L40,55 L25,40 L45,40 Z" fill="white"/></svg>');
+            background-size: cover;
+        }
+        .onepiece { background-color: #01579b; }
+
+        /* Attack on Titan theme */
+        .titan .arm { 
+            background-color: #795548; 
+            background-image: linear-gradient(to right, #795548, #5d4037);
+        }
+        .titan .circle { 
+            background-color: #8bc34a;
+            background-image: radial-gradient(circle, #8bc34a, #689f38);
+        }
+        .titan .center-circle { 
+            background-color: #607d8b;
+            background-image: radial-gradient(circle, #607d8b, #455a64);
+        }
+        .titan { background-color: #263238; }
+
+        /* My Hero Academia theme */
+        .hero .arm { 
+            background-color: #4caf50; 
+            background-image: linear-gradient(to right, #4caf50, #2e7d32);
+        }
+        .hero .circle { 
+            background-color: #f44336;
+            background-image: radial-gradient(circle, #f44336, #c62828);
+        }
+        .hero .center-circle { 
+            background-color: #ffc107;
+            background-image: radial-gradient(circle, #ffc107, #ffa000);
+        }
+        .hero { background-color: #1a237e; }
+    </style>
+</head>
+<body class="classic">
+    <div class="container">
+        <h1> Virtual Fidget Spinner</h1>
+        <p>Tap or click the spinner to make it spin!</p>
+        
+        <div class="spinner-container" id="spinnerContainer">
+            <div class="spinner" id="spinner">
+                <div class="arm"></div>
+                <div class="arm"></div>
+                <div class="arm"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="center-circle"></div>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <p>Taps: <span id="tapCount">0</span></p>
+            <p>Speed: <span id="spinSpeed">0</span> RPM</p>
+        </div>
+        
+        <div class="score-container">
+            <h3>One Minute Challenge</h3>
+            <p>Time: <span id="timer">60</span> seconds</p>
+            <p>Score: <span id="score">0</span> points</p>
+            <button id="startChallenge" class="theme-btn" style="background-color: #4CAF50; color: white;">Start Challenge</button>
+        </div>
+        
+        <div class="controls">
+            <h3>Choose a Theme:</h3>
+            <div>
+                <button class="theme-btn" data-theme="classic" style="background-color: #3498db; color: white;">Classic</button>
+                <button class="theme-btn" data-theme="neon" style="background-color: #00ff00; color: black;">Neon</button>
+                <button class="theme-btn" data-theme="fire" style="background-color: #ff5722; color: white;">Fire</button>
+                <button class="theme-btn" data-theme="ice" style="background-color: #90caf9; color: black;">Ice</button>
+                <button class="theme-btn" data-theme="galaxy" style="background-color: #9c27b0; color: white;">Galaxy</button>
+            </div>
+            <h3>Anime Themes:</h3>
+            <div>
+                <button class="theme-btn" data-theme="naruto" style="background-color: #ff9800; color: black;">Naruto</button>
+                <button class="theme-btn" data-theme="dragonball" style="background-color: #ffc107; color: black;">Dragon Ball</button>
+                <button class="theme-btn" data-theme="onepiece" style="background-color: #f44336; color: white;">One Piece</button>
+                <button class="theme-btn" data-theme="titan" style="background-color: #795548; color: white;">Attack on Titan</button>
+                <button class="theme-btn" data-theme="hero" style="background-color: #4caf50; color: white;">My Hero Academia</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const spinner = document.getElementById('spinner');
+            const spinnerContainer = document.getElementById('spinnerContainer');
+            const tapCountElement = document.getElementById('tapCount');
+            const spinSpeedElement = document.getElementById('spinSpeed');
+            const themeButtons = document.querySelectorAll('.theme-btn');
+            const timerElement = document.getElementById('timer');
+            const scoreElement = document.getElementById('score');
+            const startChallengeButton = document.getElementById('startChallenge');
+            
+            let rotation = 0;
+            let speed = 60; // Initial speed of 10 RPM (60 degrees per second)
+            let tapCount = 0;
+            let spinning = false;
+            let lastTime = null;
+            let friction = 0.995; // Reduced friction for longer spins
+            let score = 0;
+            let timerInterval = null;
+            let challengeActive = false;
+            let maxRPM = 0;
+            
+            // Start with initial speed
+            spinning = true;
+            requestAnimationFrame(updateSpinner);
+            
+            // Handle spinner tap/click
+            spinnerContainer.addEventListener('click', function() {
+                tapCount++;
+                tapCountElement.textContent = tapCount;
+                
+                // Increase speed based on tap count
+                speed += 10 + (tapCount * 0.5);
+                if (speed > 6000) speed = 6000; // Cap the maximum speed
+                
+                if (!spinning) {
+                    spinning = true;
+                    requestAnimationFrame(updateSpinner);
+                }
+                
+                // Update score during challenge
+                if (challengeActive) {
+                    score += 10;
+                    scoreElement.textContent = score;
+                }
+                
+                // Create tap effect
+                createTapEffect(event);
+            });
+            
+            // Handle theme changes
+            themeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const theme = this.getAttribute('data-theme');
+                    document.body.className = theme;
+                });
+            });
+            
+            // Start challenge button
+            startChallengeButton.addEventListener('click', function() {
+                if (!challengeActive) {
+                    startChallenge();
+                }
+            });
+            
+            // Start one-minute challenge
+            function startChallenge() {
+                challengeActive = true;
+                score = 0;
+                tapCount = 0;
+                speed = 60;
+                maxRPM = 0;
+                
+                scoreElement.textContent = score;
+                tapCountElement.textContent = tapCount;
+                timerElement.textContent = '60';
+                startChallengeButton.textContent = 'Challenge Active';
+                startChallengeButton.style.backgroundColor = '#f44336';
+                
+                let timeLeft = 60;
+                
+                timerInterval = setInterval(function() {
+                    timeLeft--;
+                    timerElement.textContent = timeLeft;
+                    
+                    if (timeLeft <= 0) {
+                        endChallenge();
+                    }
+                }, 1000);
+                
+                if (!spinning) {
+                    spinning = true;
+                    requestAnimationFrame(updateSpinner);
+                }
+            }
+            
+            // End challenge
+            function endChallenge() {
+                clearInterval(timerInterval);
+                challengeActive = false;
+                
+                // Calculate final score: taps + max RPM + current RPM
+                const finalScore = score + Math.round(maxRPM * 2);
+                score = finalScore;
+                scoreElement.textContent = finalScore;
+                
+                startChallengeButton.textContent = 'Start Challenge';
+                startChallengeButton.style.backgroundColor = '#4CAF50';
+                
+                // Show final score alert
+                setTimeout(function() {
+                    alert(`Challenge complete!\nFinal Score: ${finalScore}\nMax RPM: ${maxRPM}\nTotal Taps: ${tapCount}`);
+                }, 100);
+            }
+            
+            // Create firework effect
+            function createFireworks(rpm) {
+                const colors = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff'];
+                
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        const firework = document.createElement('div');
+                        firework.className = 'firework';
+                        firework.style.left = Math.random() * window.innerWidth + 'px';
+                        firework.style.top = Math.random() * window.innerHeight + 'px';
+                        firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        document.body.appendChild(firework);
+                        
+                        // Remove firework after animation completes
+                        setTimeout(() => {
+                            document.body.removeChild(firework);
+                        }, 1000);
+                    }, i * 100);
+                }
+            }
+            
+            // Create speed trail effect
+            function createSpeedTrail(rpm) {
+                const spinnerRect = spinner.getBoundingClientRect();
+                const centerX = spinnerRect.left + spinnerRect.width / 2;
+                const centerY = spinnerRect.top + spinnerRect.height / 2;
+                
+                // Create trails from each circle
+                const circles = spinner.querySelectorAll('.circle');
+                circles.forEach(circle => {
+                    const circleRect = circle.getBoundingClientRect();
+                    const circleX = circleRect.left + circleRect.width / 2;
+                    const circleY = circleRect.top + circleRect.height / 2;
+                    
+                    const trail = document.createElement('div');
+                    trail.className = 'speed-trail';
+                    trail.style.left = circleX + 'px';
+                    trail.style.top = circleY + 'px';
+                    
+                    // Color based on current theme
+                    const currentTheme = document.body.className;
+                    if (currentTheme === 'neon') {
+                        trail.style.backgroundColor = '#00ff00';
+                        trail.style.boxShadow = '0 0 5px #00ff00';
+                    } else if (currentTheme === 'fire') {
+                        trail.style.backgroundColor = '#ff5722';
+                    } else if (currentTheme === 'ice') {
+                        trail.style.backgroundColor = '#90caf9';
+                    } else if (currentTheme === 'galaxy') {
+                        trail.style.backgroundColor = '#9c27b0';
+                    } else if (currentTheme.includes('naruto')) {
+                        trail.style.backgroundColor = '#ff9800';
+                    } else if (currentTheme.includes('dragonball')) {
+                        trail.style.backgroundColor = '#ffc107';
+                    } else if (currentTheme.includes('onepiece')) {
+                        trail.style.backgroundColor = '#f44336';
+                    } else if (currentTheme.includes('titan')) {
+                        trail.style.backgroundColor = '#8bc34a';
+                    } else if (currentTheme.includes('hero')) {
+                        trail.style.backgroundColor = '#4caf50';
+                    } else {
+                        trail.style.backgroundColor = '#e74c3c';
+                    }
+                    
+                    document.body.appendChild(trail);
+                    
+                    // Remove trail after animation completes
+                    setTimeout(() => {
+                        document.body.removeChild(trail);
+                    }, 1000);
+                });
+            }
+            
+            // Create tap effect
+            function createTapEffect(event) {
+                const tapEffect = document.createElement('div');
+                tapEffect.className = 'firework';
+                tapEffect.style.left = event.clientX + 'px';
+                tapEffect.style.top = event.clientY + 'px';
+                tapEffect.style.backgroundColor = '#ffffff';
+                tapEffect.style.transform = 'scale(0)';
+                document.body.appendChild(tapEffect);
+                
+                // Remove tap effect after animation completes
+                setTimeout(() => {
+                    document.body.removeChild(tapEffect);
+                }, 1000);
+            }
+            
+            // Animation loop for spinner
+            function updateSpinner(timestamp) {
+                if (!lastTime) {
+                    lastTime = timestamp;
+                }
+                
+                const deltaTime = timestamp - lastTime;
+                lastTime = timestamp;
+                
+                // Apply rotation based on speed
+                rotation += speed * deltaTime / 1000;
+                spinner.style.transform = `rotate(${rotation}deg)`;
+                
+                // Apply friction to slow down the spinner
+                speed *= friction;
+                
+                // Update speed display (convert to RPM)
+                const rpm = Math.round((speed / 360) * 60);
+                spinSpeedElement.textContent = rpm;
+                
+                // Track max RPM during challenge
+                if (challengeActive && rpm > maxRPM) {
+                    maxRPM = rpm;
+                }
+                
+                // Special effects based on speed
+                if (rpm > 0) {
+                    // Speed trail effect at moderate speeds
+                    if (rpm > 100 && rpm % 20 === 0) {
+                        createSpeedTrail(rpm);
+                    }
+                    
+                    // Fireworks effect at high speeds
+                    if (rpm > 300 && rpm % 50 === 0) {
+                        createFireworks(rpm);
+                    }
+                }
+                
+                // Continue animation if still spinning
+                if (speed > 0.5) {
+                    requestAnimationFrame(updateSpinner);
+                } else {
+                    spinning = false;
+                    lastTime = null;
+                    speed = 0;
+                    spinSpeedElement.textContent = '0';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
